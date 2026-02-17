@@ -6,153 +6,101 @@
     <title>Sistema Otto - Control Central</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* ========== ESTILOS GENERALES ========== */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        body {
-            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        /* ========== LOGIN ========== */
-        #login-screen {
-            display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;
-        }
-        .login-card {
-            background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 40px;
-            width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); text-align: center;
-        }
-        .login-btn {
-            width: 100%; padding: 16px; background: #1a237e; color: white;
-            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px;
-        }
-
-        /* ========== DASHBOARD ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #1a237e 0%, #311b92 100%); min-height: 100vh; color: #333; }
+        #login-screen { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px; text-align: center; }
+        .login-btn { width: 100%; padding: 16px; background: #1a237e; color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; font-weight: bold; }
         #dashboard-content { display: none; max-width: 1200px; margin: 0 auto; padding: 20px; }
-        
-        .panel {
-            background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; }
-
-        /* ========== MAPA ========== */
+        .panel { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; }
         #map { height: 500px; width: 100%; border-radius: 10px; border: 2px solid #ddd; }
-
-        /* ========== BOTONES Y LEYENDA ========== */
-        .fiesta-btn {
-            background: linear-gradient(135deg, #FF0000, #00FF00, #0000FF);
-            color: white; border: none; padding: 15px; border-radius: 10px;
-            width: 100%; font-weight: bold; cursor: pointer; margin: 15px 0;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-
-        .leyenda {
-            display: flex; justify-content: center; gap: 15px; margin-top: 15px; flex-wrap: wrap;
-        }
-        .leyenda-item { display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
-        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #000; }
+        .fiesta-btn { background: linear-gradient(135deg, #F00, #0F0, #00F); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; margin: 15px 0; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        .leyenda { display: flex; justify-content: center; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid #000; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h2 style="color: #1a237e">🚇 SISTEMA OTTO</h2>
-            <p style="color: #666; margin-bottom: 20px;">Control de Estaciones Inteligentes</p>
-            <input type="password" id="pass" placeholder="Contraseña" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc;">
+            <h2>🚇 SISTEMA OTTO</h2>
+            <input type="password" id="pass" placeholder="Contraseña" style="width: 100%; padding: 12px; margin-top: 20px; border-radius: 8px; border: 1px solid #ccc;">
             <button class="login-btn" onclick="checkLogin()">INGRESAR</button>
         </div>
     </div>
 
     <div id="dashboard-content">
-        <div class="panel dashboard-header">
-            <div>
-                <h1>SISTEMA OTTO: CONTROL CENTRAL</h1>
-                <p id="stats-txt">Iniciando monitoreo...</p>
-            </div>
-            <button onclick="location.reload()" style="padding: 8px 15px; border-radius: 5px; cursor: pointer;">Cerrar Sesión</button>
+        <div class="panel">
+            <h1>SISTEMA OTTO: PANEL CENTRAL</h1>
+            <p id="stats-txt">Iniciando...</p>
         </div>
-
-        <button onclick="activarModoFiesta()" class="fiesta-btn">🎉 ACTIVAR MODO FIESTA EN TODAS LAS ESTACIONES</button>
-
+        <button onclick="activarModoFiesta()" class="fiesta-btn">🎉 MODO FIESTA</button>
         <div class="panel">
             <div id="map"></div>
             <div class="leyenda">
-                <div class="leyenda-item"><div class="dot" style="background: #2ecc71;"></div> Normal</div>
-                <div class="leyenda-item"><div class="dot" style="background: #f39c12;"></div> Alerta</div>
-                <div class="leyenda-item"><div class="dot" style="background: #e74c3c;"></div> Crítico</div>
-                <div class="leyenda-item"><div class="dot" style="background: #95a5a6;"></div> Offline</div>
+                <span><div class="dot" style="background: #2ecc71;"></div> Normal</span>
+                <span><div class="dot" style="background: #f39c12;"></div> Alerta</span>
+                <span><div class="dot" style="background: #e74c3c;"></div> Crítico</span>
+                <span><div class="dot" style="background: #95a5a6;"></div> Offline</span>
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // DATOS DE ESTACIONES (Simplificado para el ejemplo, pero listo para 104)
+        // LISTADO EXTENDIDO DE ESTACIONES (Ejemplo representativo de las líneas)
         const estaciones = [
             { n: "Plaza de Mayo", l: "A", lat: -34.6083, lon: -58.3712, st: "ok" },
-            { n: "Perú", l: "A", lat: -34.6085, lon: -58.3725, st: "alerta" },
-            { n: "Retiro", l: "C", lat: -34.5915, lon: -58.3755, st: "critico" },
-            { n: "Leandro N. Alem", l: "B", lat: -34.6020, lon: -58.3705, st: "off" },
-            { n: "Congreso", l: "A", lat: -34.6091, lon: -58.3924, st: "ok" }
-            // Aquí se pueden agregar las 104 estaciones siguiendo este formato
+            { n: "Congreso", l: "A", lat: -34.6091, lon: -58.3924, st: "ok" },
+            { n: "Acoyte", l: "A", lat: -34.6181, lon: -58.4363, st: "alerta" },
+            { n: "San José de Flores", l: "A", lat: -34.6297, lon: -58.4633, st: "ok" },
+            { n: "Leandro N. Alem", l: "B", lat: -34.6020, lon: -58.3705, st: "ok" },
+            { n: "Callao", l: "B", lat: -34.6044, lon: -58.3925, st: "ok" },
+            { n: "Lacroze", l: "B", lat: -34.5866, lon: -58.4554, st: "critico" },
+            { n: "Juan Manuel de Rosas", l: "B", lat: -34.5744, lon: -58.4861, st: "ok" },
+            { n: "Retiro", l: "C", lat: -34.5915, lon: -58.3755, st: "off" },
+            { n: "Constitución", l: "C", lat: -34.6277, lon: -58.3813, st: "ok" },
+            { n: "Catedral", l: "D", lat: -34.6076, lon: -58.3742, st: "ok" },
+            { n: "Palermo", l: "D", lat: -34.5816, lon: -58.4210, st: "ok" },
+            { n: "Congreso de Tucumán", l: "D", lat: -34.5558, lon: -58.4621, st: "ok" },
+            { n: "Bolívar", l: "E", lat: -34.6097, lon: -58.3739, st: "ok" },
+            { n: "Plaza de los Virreyes", l: "E", lat: -34.6433, lon: -58.4619, st: "ok" },
+            { n: "Facultad de Derecho", l: "H", lat: -34.5833, lon: -58.3927, st: "ok" },
+            { n: "Hospitales", l: "H", lat: -34.6417, lon: -58.4111, st: "ok" }
         ];
 
-        let mapa;
-        let capasMarcadores = [];
+        let mapa, capasMarcadores = [];
 
         function checkLogin() {
-            // Entra con cualquier cosa para facilitar el test
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('dashboard-content').style.display = 'block';
-            setTimeout(initSistema, 100);
+            setTimeout(initMap, 100);
         }
 
-        function initSistema() {
-            if (!mapa) {
-                mapa = L.map('map').setView([-34.6037, -58.3816], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
-                dibujarEstaciones();
-                document.getElementById('stats-txt').innerText = `Monitoreando ${estaciones.length} estaciones activas.`;
-            }
-        }
-
-        function getEstilo(estado) {
-            let color = "#2ecc71";
-            if (estado === "alerta") color = "#f39c12";
-            if (estado === "critico") color = "#e74c3c";
-            if (estado === "off") color = "#95a5a6";
+        function initMap() {
+            mapa = L.map('map').setView([-34.6037, -58.3816], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
             
-            return {
-                radius: 10,
-                fillColor: color,
-                color: "#000000", // EL BORDE NEGRO QUE QUERÍAS
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-            };
-        }
-
-        function dibujarEstaciones() {
             estaciones.forEach(est => {
-                let m = L.circleMarker([est.lat, est.lon], getEstilo(est.st))
-                    .addTo(mapa)
-                    .bindPopup(`<b>Estación: ${est.n}</b><br>Línea: ${est.l}<br>Estado: ${est.st}`);
+                let color = est.st == "ok" ? "#2ecc71" : est.st == "alerta" ? "#f39c12" : est.st == "critico" ? "#e74c3c" : "#95a5a6";
+                let m = L.circleMarker([est.lat, est.lon], {
+                    radius: 9, fillColor: color, color: "#000", weight: 2, fillOpacity: 1
+                }).addTo(mapa).bindPopup(`<b>${est.n}</b> (Línea ${est.l})`);
                 capasMarcadores.push(m);
             });
+            document.getElementById('stats-txt').innerText = `Sistema Otto monitoreando ${estaciones.length} puntos estratégicos.`;
         }
 
         function activarModoFiesta() {
             setInterval(() => {
                 capasMarcadores.forEach(m => {
-                    let randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-                    m.setStyle({ fillColor: randomColor, color: '#FFFFFF' });
+                    m.setStyle({ 
+                        fillColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+                        color: '#FFF' 
+                    });
                 });
-            }, 300);
+            }, 200);
         }
     </script>
 </body>
